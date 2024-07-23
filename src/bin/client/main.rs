@@ -5,7 +5,7 @@ fn main() -> std::io::Result<()> {
     let socket_path = "/tmp/ms_socket";
     let mut stream = UnixStream::connect(socket_path)?;
 
-    let request = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n";
+    let request = "GET /hello HTTP/1.1\r\nHost: localhost\r\n\r\n";
     stream.write_all(request.as_bytes())?;
     stream.flush()?;
 

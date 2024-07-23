@@ -2,14 +2,27 @@ use std::fs;
 use std::io::{Read, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
 
+fn handle_request(req: &str) -> String {
+    println!("Received request: {}", req);
+
+    if req.starts_with("GET /hello HTTP/1.1\r\n") {
+        return String::from("HTTP/1.1 200 OK\r\n\r\nHello World!");
+    } else if req.starts_with("GET /version HTTP/1.1\n\n") {
+        return String::from("HTTP/1.1 200 OK\r\n\r\n1.0.0");
+    } else {
+        String::from("HTTP/1.1 404 NOT FOUND\r\n\r\n")
+    }
+}
+
 fn handle_client(mut stream: UnixStream) {
-    let mut buffer = [0; 1024];
+    // Currently we are only supporting two requests:
+    // GET /hello and GET /version
+    let mut buffer = [0; 128]; // Big enough
     match stream.read(&mut buffer) {
         Ok(_) => {
             let request = String::from_utf8_lossy(&buffer[..]);
-            println!("Received request: {}", request);
+            let response = handle_request(&request);
 
-            let response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, world!";
             stream.write_all(response.as_bytes()).unwrap();
             stream.flush().unwrap();
         }
